@@ -43,8 +43,17 @@ let nodes_type = [
 
 let nodes = [];
 
+
 function onChangeContext(){
 
+}
+
+function drawLine(line, x1, y1, x2, y2) {
+    let delta = x2 - x1;
+    let delta0 = x1 + delta * 0.5;
+    let delta1 = x2 - delta * 0.5;
+
+    line.setAttribute("d", "M"+x1+","+y1+" C"+delta0+","+y1+" "+delta1+","+y2+" "+x2+","+y2);
 }
 
 function onChangeNode(node){
@@ -176,27 +185,27 @@ function nodeMoveEvent(){
 function nodeLineEvent(){
     let node = null;
     let nodeOut = null;
-    let selectedNode = null;
-    let selectedNodeStartPos = null;
     let selectedNodeStartMousePos = null;
     let line = null;
 
+    let startX;
+    let startY;
+
+    let startMX;
+    let startMY;
+
     $(".node-io-button").mousedown(function(e){
         if($(this).parent().hasClass("node-output")){
-            selectedNode = $(this).parent().parent().parent();
             node = nodes[Number($(this).parent().parent().parent().attr("id"))];
             nodeOut = Number($(this).attr("id"));
 
-            let o = $(this).offset();
-            selectedNodeStartPos = { x: o.left + $(this).width() / 2, y: o.top + $(this).height() / 2 };
-            selectedNodeStartMousePos = { x: e.pageX, y: e.pageY };
+            startX = $(this).offset().left + $(this).width() / 2;
+            startY = $(this).offset().top + $(this).height() / 2;
+
+            startMX = e.pageX;
+            startMY = e.pageY;
 
             line = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            
-            let x = selectedNodeStartPos.x;
-            let y = selectedNodeStartPos.y;
-
-            line.setAttribute("d", "M"+x+","+y+" C"+x+","+y+" "+x+","+y+" "+x+","+y);
             line.setAttribute("stroke", "url(#gradient)");
             line.setAttribute("stroke-width", "6px");
             line.setAttribute("stroke-linecap", "round");
@@ -207,23 +216,15 @@ function nodeLineEvent(){
     });
 
     $(document).mousemove(function(e){
-        if(selectedNode !== null){
-            let startX = selectedNodeStartPos.x;
-            let startY = selectedNodeStartPos.y;
-
-            let endX = (e.pageX - selectedNodeStartMousePos.x) + selectedNode.offset().left + selectedNode.width();
-            let endY = (e.pageY - selectedNodeStartMousePos.y) + selectedNode.offset().top + selectedNode.height();
-
-            let delta = endX - startX;
-            let delta0 = startX + delta * 0.5;
-            let delta1 = endX - delta * 0.5;
-
-            line.setAttribute("d", "M"+startX+","+startY+" C"+delta0+","+selectedNodeStartPos.y+" "+delta1+","+endY+" "+endX+","+endY);
+        if(node !== null){
+            let endX = (e.pageX - startMX) + node.html.offset().left + node.html.width();
+            let endY = (e.pageY - startMY) + node.html.offset().top + node.html.height();
+            drawLine(line, startX, startY, endX, endY);
         }
     });
 
     $(document).mouseup(function(e){
-        if(selectedNode !== null){
+        if(node !== null){
             if($(e.toElement).hasClass("node-io-button")){
                 let id = Number($(e.toElement).parent().parent().parent().attr("id"));
 
@@ -243,22 +244,15 @@ function nodeLineEvent(){
 
                 node.nodes.push(nodes[id]);
 
-                let startX = selectedNodeStartPos.x;
-                let startY = selectedNodeStartPos.y;
-
                 let endX = $(e.toElement).offset().left + $(e.toElement).width() / 2;
                 let endY = $(e.toElement).offset().top + $(e.toElement).height() / 2;
-
-                let delta = endX - startX;
-                let delta0 = startX + delta * 0.5;
-                let delta1 = endX - delta * 0.5;
-
-                line.setAttribute("d", "M"+startX+","+startY+" C"+delta0+","+selectedNodeStartPos.y+" "+delta1+","+endY+" "+endX+","+endY);
+                drawLine(line, startX, startY, endX, endY);
             }
             else{
                 $(".node-line-container").remove(line);
             }
-            selectedNode = null;
+            
+            node = null;
         }
     });
 
