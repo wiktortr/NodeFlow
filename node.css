@@ -1,0 +1,82 @@
+
+body{
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+.node-context{
+    width: 100%;
+    height: 100%;
+}
+
+.node-line-container{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+.node-line{
+    stroke: #F00;
+    fill: none;
+    stroke-width: 12px;
+}
+
+.node-container{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+}
+
+.node{
+    width: 100px;
+    min-width: 20px;
+    max-width: 100%;
+    background-color: var(--main-element-color0);
+    color: var(--main-font-color0);
+    opacity: 0.5;
+}
+
+.node-title{
+    user-select: none;
+}
+
+.node-input-context, .node-output-context{
+    list-style-type: none;
+    padding: 0px;
+    margin: 0px;
+    user-select: none;
+}
+
+.node-input-context{
+    float: left;
+}
+
+.node-output-context{
+    float: right;
+}
+
+.node-io-button{
+    width: 15px;
+    height: 15px;
+    border-radius: 15px;
+}
+
+.node-input{
+    margin-left: -7.5px;
+}
+
+.node-output{
+    margin-right: -7.5px;
+}
+
+.node-input > .node-io-button{
+    background-color: blue;
+}
+
+.node-output > .node-io-button{
+    background-color: green;
+}
