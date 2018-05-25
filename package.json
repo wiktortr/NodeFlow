@@ -1,0 +1,23 @@
+{
+  "name": "nodeflow",
+  "version": "1.0.0",
+  "description": "NodeFlow is flox-based programming tool",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wiktortr/NodeFlow.git"
+  },
+  "author": "wiktortr",
+  "license": "SEE LICENSE IN LICENCE",
+  "bugs": {
+    "url": "https://github.com/wiktortr/NodeFlow/issues"
+  },
+  "homepage": "https://github.com/wiktortr/NodeFlow#readme",
+  "dependencies": {
+    "electron": "^2.0.2",
+    "jquery": "^3.3.1"
+  }
+}

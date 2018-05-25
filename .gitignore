@@ -1,0 +1,6 @@
+# Visual Studio
+.vscode
+
+# Node JS Stuff
+node_modules
+package-lock.json
