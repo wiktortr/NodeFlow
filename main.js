@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
 
 let nodes_type = [
     {
@@ -49,6 +52,14 @@ function onChangeContext(){
 }
 
 function drawLine(line, x1, y1, x2, y2) {
+
+    if(y1 > y2){
+        line.setAttribute("stroke", "url(#gradient)");
+    }
+    else{
+        line.setAttribute("stroke", "url(#gradient2)");
+    }
+
     let delta = x2 - x1;
     let delta0 = x1 + delta * 0.5;
     let delta1 = x2 - delta * 0.5;
@@ -58,48 +69,36 @@ function drawLine(line, x1, y1, x2, y2) {
 
 function onChangeNode(node){
 
-    if(node.connected_to.length > 0){
-        for (let i = 0; i < node.connected_to.length; i++) {
-            let con = node.connected_to[i];
+    if(node.output.length > 0){
+        for (let i = 0; i < node.output.length; i++) {
+            let con = node.output[i];
 
-            let btn0 = $(node.html).children(".node-output-context").children("li").children(".node-io-button").eq(con.from);
-            let btn1 = $(con.node.html).children(".node-input-context").children("li").children(".node-io-button").eq(con.to);
+            let btn0 = $(node.html).children(".node-output-context").children("li").children(".node-io-button").eq(con.output);
+            let btn1 = $(con.node.html).children(".node-input-context").children("li").children(".node-io-button").eq(con.input);
 
             let startX = btn0.offset().left + btn0.width() / 2;
             let startY = btn0.offset().top + btn0.height() / 2;
 
             let endX = btn1.offset().left + btn1.width() / 2;
             let endY = btn1.offset().top + btn1.height() / 2;
-
-            let delta = endX - startX;
-            let delta0 = startX + delta * 0.5;
-            let delta1 = endX - delta * 0.5;
-
-            con.line.setAttribute("d", "M"+startX+","+startY+" C"+delta0+","+startY+" "+delta1+","+endY+" "+endX+","+endY);
-
+            drawLine(con.line, startX, startY, endX, endY);
         }
     }
 
 
-    if(node.connected_from.length > 0){
-        for (let i = 0; i < node.connected_from.length; i++) {
-            let con = node.connected_from[i];
+    if(node.input.length > 0){
+        for (let i = 0; i < node.input.length; i++) {
+            let con = node.input[i];
 
-            let btn0 = $(con.node.html).children(".node-output-context").children("li").children(".node-io-button").eq(con.from);
-            let btn1 = $(node.html).children(".node-input-context").children("li").children(".node-io-button").eq(con.to);
+            let btn0 = $(con.node.html).children(".node-output-context").children("li").children(".node-io-button").eq(con.output);
+            let btn1 = $(node.html).children(".node-input-context").children("li").children(".node-io-button").eq(con.input);
 
             let startX = btn0.offset().left + btn0.width() / 2;
             let startY = btn0.offset().top + btn0.height() / 2;
 
             let endX = btn1.offset().left + btn1.width() / 2;
             let endY = btn1.offset().top + btn1.height() / 2;
-
-            let delta = endX - startX;
-            let delta0 = startX + delta * 0.5;
-            let delta1 = endX - delta * 0.5;
-
-            con.line.setAttribute("d", "M"+startX+","+startY+" C"+delta0+","+startY+" "+delta1+","+endY+" "+endX+","+endY);
-
+            drawLine(con.line, startX, startY, endX, endY);
         }
     }
 
@@ -147,11 +146,16 @@ function addNode(type){
     nodes.push({
         name: type.name,
         type: type,
-        html: c,
+        input: [],
+        output: [],
         connected_to: [],
         connected_from: [],
         nodes: [],
+        html: c,
     });
+
+    nodeMoveEvent();
+    nodeLineEvent();
 }
 
 function nodeMoveEvent(){
@@ -228,17 +232,17 @@ function nodeLineEvent(){
             if($(e.toElement).hasClass("node-io-button")){
                 let id = Number($(e.toElement).parent().parent().parent().attr("id"));
 
-                node.connected_to.push({
+                node.output.push({
                     node: nodes[id],
-                    to: Number($(e.toElement).attr("id")),
-                    from: nodeOut,
+                    input: Number($(e.toElement).attr("id")),
+                    output: nodeOut,
                     line: line
                 });
                 
-                nodes[id].connected_from.push({
+                nodes[id].input.push({
                     node: node,
-                    to: Number($(e.toElement).attr("id")),
-                    from: nodeOut,
+                    input: Number($(e.toElement).attr("id")),
+                    output: nodeOut,
                     line: line
                 });
 
@@ -251,11 +255,60 @@ function nodeLineEvent(){
             else{
                 $(".node-line-container").remove(line);
             }
-            
+
             node = null;
         }
     });
 
+}
+
+function save(filename) {
+    let data = {
+        lang: {
+            name: "test",
+            inside: true,
+            other: null,
+            nodes: nodes_type,
+        },
+        nodes: [],
+        tree: [],
+    };
+
+    let root = new Array();
+
+    for (let i = 0; i < nodes.length; i++) {
+        let n = nodes[i];
+        if(n.input.length == 0){
+            console.log("Root: ");
+            console.log(n);
+            root.push(n);
+        }
+    }
+    console.log(root);
+
+    // for (let i = 0; i < nodes.length; i++) {
+    //     let n = nodes[i];
+    //     let node = {
+    //         name: n.name,
+    //         id: crypto.createHash("md5").update(i + JSON.stringify(n.type)).digest("hex"),
+    //         input: [],
+    //         output: [],
+    //         style: {
+    //             position: {
+    //                 x: n.html.offset().left,
+    //                 y: n.html.offset().top,
+    //             },
+    //             size: {
+    //                 x: n.html.width(),
+    //                 y: n.html.height(),
+    //             },
+    //             css: null
+    //         }
+    //     };
+
+    // }
+
+    fs.writeFileSync(filename, JSON.stringify(data));
 }
 
 $(document).ready(function(){
@@ -269,9 +322,6 @@ $(document).ready(function(){
     addNode(nodes_type[1]);
     addNode(nodes_type[1]);
     addNode(nodes_type[1]);
-
-    nodeMoveEvent();
-    nodeLineEvent();
 
 
 });
