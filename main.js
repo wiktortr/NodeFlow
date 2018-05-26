@@ -103,60 +103,82 @@ function onChangeNode(node){
 }
 
 function addNode(type){
-    let c = $("<div>").addClass("node").attr("id", nodes.length);
+
+    let node = {
+        name: type.name,
+        type: type.id,
+        input: [],
+        output: [],
+        values: [],
+        nodes: [],
+        html: $("<div>").addClass("node").attr("id", nodes.length),
+    }
 
     let title = $("<div>").addClass("node-title").html(type.name);
-    c.append(title);
+    node.html.append(title);
 
     let input = $("<ul>").addClass("node-input-context");
     for (let i = 0; i < type.input.length; i++) {
         let btn = $("<div>").addClass("node-io-button");
         btn.attr("id", i);
-
         let li = $("<li>").addClass("node-input");
         li.append(btn);
-
         input.append(li);
     }
-    c.append(input);
+    node.html.append(input);
 
     let values = $("<ul>").addClass("node-value-context");
     for (let i = 0; i < type.values.length; i++) {
-        console.log(type.values[i]);
+        let v = type.values[i];
+        let li = $("<li>").attr("id", i).attr("name", v.name);
+        li.append($("<div>").addClass("node-value-title").html(v.name));
+        let c = $("<div>").addClass("node-value-container");
+        li.append(c);
+
+        let inValue = null;
+
+        if(v.type == "string"){
+            inValue = $("<input>").attr("type", "text").addClass("node-value-in");
+            inValue.keypress(function(e) {
+                node.values[i].value = $(this).val();
+            });
+        }
+
+        if(inValue !== null){
+            c.append(inValue);
+            values.append(li);
+
+            node.values.push({
+                name: v.name,
+                type: v.type,
+                value: null,
+                html: inValue
+            });
+        }
     }
-    c.append(values);
+    node.html.append(values);
 
     let output = $("<ul>").addClass("node-output-context");
     for (let i = 0; i < type.output.length; i++) {
         let btn = $("<div>").addClass("node-io-button");
         btn.attr("id", i);
-
         let li = $("<li>").addClass("node-output");
         li.append(btn);
-
         output.append(li);
     }
-    c.append(output);
+    node.html.append(output);
 
-    c.append(`<div style="clear: both"></div><div class="node-footer"><span class="node-resize"></span></div>`);
+    node.html.append(`<div style="clear: both"></div><div class="node-footer"><span class="node-resize"></span></div>`);
 
     
-    $(".node-container").append(c);
+    $(".node-container").append(node.html);
 
     if(type.id === undefined){
         type["id"] = crypto.createHash("md5").update(JSON.stringify(type)).digest("hex");
     }
 
-    nodes.push({
-        name: type.name,
-        type: type.id,
-        input: [],
-        output: [],
-        nodes: [],
-        html: c,
-    });
-
-    return nodes[nodes.length - 1];
+    nodes.push(node);
+    return node;
 }
 
 function save(filename) {
@@ -181,6 +203,7 @@ function save(filename) {
             id: gb_index,
             uuid: crypto.createHash("md5").update(gb_index + node.name + JSON.stringify(node.type)).digest("hex"),
             connects: [],
+            values: [],
             style: {
                 position: {
                     x: node.html.offset().left,
@@ -208,6 +231,15 @@ function save(filename) {
                 output: con.output,
                 input: con.input,
                 node: found
+            });
+        }
+
+        for (let i = 0; i < node.values.length; i++) {
+            let v = node.values[i];
+            out_node.values.push({
+                name: v.name,
+                type: v.type,
+                value: v.html.val()
             });
         }
 
@@ -242,9 +274,14 @@ function load(filename) {
         n.html.css({
             left: node.style.position.x,
             top: node.style.position.y,
-            // width: node.style.size.x,
-            // height: node.style.size.y,
+            width: node.style.size.x,
+            height: node.style.size.y,
         });
+
+        for (let i = 0; i < node.values.length; i++) {
+            n.values[i].html.val(node.values[i].value);
+        }
+
     }
 
     //Create Line

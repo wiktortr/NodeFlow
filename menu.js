@@ -20,6 +20,21 @@ $(document).ready(function() {
         }
         c.append(input);
 
+        let values = $("<ul>").addClass("node-value-context");
+        for (let i = 0; i < node.values.length; i++) {
+            let v = node.values[i];
+            if(v.type == "string"){
+                values.append(`
+                <li class="node-value" id="` + v.name + `">
+                    <div class="node-value-title">` + v.name + `</div>
+                    <div class="node-value-container">
+                        <input type="text" class="node-value-in">
+                    </div>
+                </li>
+                `);
+            }
+        }
+        c.append(values);
 
         let output = $("<ul>").addClass("node-output-context");
         for (let i = 0; i < node.output.length; i++) {
@@ -30,7 +45,7 @@ $(document).ready(function() {
             output.append(li);
         }
         c.append(output);
-        c.append(`<div style="clear: both;"></div>`);
+        c.append(`<div style="clear: both"></div><div class="node-footer"><span class="node-resize"></span></div>`);
         c.css("transform", "scale(0.65)").css("position", "initial");
         div.append(c);
 
