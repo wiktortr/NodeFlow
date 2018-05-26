@@ -490,6 +490,54 @@ $(document).on("dblclick", ".node-title", function() {
 });
 
 //Move document
-{
+/*{
+    let move = false;
 
-}
+    let startX;
+    let startY;
+
+    let startMX;
+    let startMY;
+
+    $(document).mousedown(function(e) {
+        if(e.button == 1){
+            move = true;
+
+            startMX = e.pageX;
+            startMY = e.pageY;
+
+            let o = $(".node-container").offset();
+
+            startX = o.left;
+            startY = o.top;
+
+        }
+    });
+
+    $(document).mousemove(function(e) {
+        if(move){
+
+            let mX = e.pageX - startMX;
+            let mY = e.pageY - startMY;
+
+            $(".node-container").css({
+                left: startX + mX,
+                top: startY + mY,
+            });
+
+            $(".node-line-container").css({
+                left: startX + mX,
+                top: startY + mY,
+            });
+
+            console.log("move");
+        }
+    });
+
+    $(document).mouseup(function(e) {
+        if(move){
+            move = false;
+        }
+    });
+
+}*/
