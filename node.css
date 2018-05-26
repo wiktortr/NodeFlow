@@ -27,6 +27,10 @@
     max-width: 100%;
     background-color: var(--main-element-color0);
     color: var(--main-font-color0);
+    border-radius: 2px;
+
+    user-select: none;
+    cursor: default;
 }
 
 .node-title{
@@ -44,19 +48,44 @@
     width: 100%;
 }
 
-.node-input-context, .node-output-context{
+.node-input-context, .node-value-context, .node-output-context{
+    float: left;
     user-select: none;
     list-style-type: none;
     padding: 0px;
     margin: 0px;
+    min-height: 1px;
 }
 
-.node-input-context{
-    float: left;
+.node-input-context, .node-output-context{
+    width: 15px;
 }
 
-.node-output-context{
-    float: right;
+.node-value-context{
+    width: calc(100% - 30px);
+}
+
+.node-value{
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.node-value:first-child{
+    margin-top: 20px;
+}
+
+.node-value-title{
+    font-size: 10px;
+    color: #fff;
+}
+
+.node-value-container{
+
+}
+
+.node-value-in{
+    width: 100%;
+    border-radius: 5px;
 }
 
 .node-io-button{
@@ -75,7 +104,7 @@
 }
 
 .node-output{
-    margin-right: -7.5px;
+    margin-left: 7.5px;
 }
 
 .node-input > .node-io-button{
@@ -84,4 +113,19 @@
 
 .node-output > .node-io-button{
     background-color: #01FF89;
+}
+
+.node-footer{
+    width: 100%;
+    text-align: right;
+}
+
+.node-resize{
+    display: block;
+    width: 0;
+	height: 0;
+	border-bottom: 10px solid #fff;
+    border-left: 10px solid transparent;
+    margin-left: calc(100% - 12px);
+    margin-bottom: 2px;
 }

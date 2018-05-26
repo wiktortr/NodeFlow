@@ -103,12 +103,9 @@ function onChangeNode(node){
 }
 
 function addNode(type){
-    let c = $("<div>").addClass("node");
-
-    c.attr("id", nodes.length);
+    let c = $("<div>").addClass("node").attr("id", nodes.length);
 
     let title = $("<div>").addClass("node-title").html(type.name);
-
     c.append(title);
 
     let input = $("<ul>").addClass("node-input-context");
@@ -123,6 +120,11 @@ function addNode(type){
     }
     c.append(input);
 
+    let values = $("<ul>").addClass("node-value-context");
+    for (let i = 0; i < type.values.length; i++) {
+        console.log(type.values[i]);
+    }
+    c.append(values);
 
     let output = $("<ul>").addClass("node-output-context");
     for (let i = 0; i < type.output.length; i++) {
@@ -136,10 +138,14 @@ function addNode(type){
     }
     c.append(output);
 
-    c.append(`<div style="clear: both;"></div>`);
+    c.append(`<div style="clear: both"></div><div class="node-footer"><span class="node-resize"></span></div>`);
 
     
     $(".node-container").append(c);
+
+    if(type.id === undefined){
+        type["id"] = crypto.createHash("md5").update(JSON.stringify(type)).digest("hex");
+    }
 
     nodes.push({
         name: type.name,
@@ -155,12 +161,7 @@ function addNode(type){
 
 function save(filename) {
     let data = {
-        lang: {
-            name: "test",
-            inside: true,
-            other: null,
-            nodes: nodes_type,
-        },
+        lang: language,
         nodes: []
     };
 
@@ -219,8 +220,6 @@ function save(filename) {
 
 function load(filename) {
     let data = JSON.parse(fs.readFileSync(filename));
-    
-    nodes_type = data.lang.nodes;
 
     //Create Nodes
     for (let i = 0; i < data.nodes.length; i++) {
@@ -233,13 +232,18 @@ function load(filename) {
             }
         }
 
+        if(found === null){
+            console.log("Can't load node: " + node.name + " ID: " + node.uuid);
+            continue;
+        }
+
         let n = addNode(found);
         n["uuid"] = node.uuid;
         n.html.css({
             left: node.style.position.x,
             top: node.style.position.y,
-            width: node.style.size.x,
-            height: node.style.size.y,
+            // width: node.style.size.x,
+            // height: node.style.size.y,
         });
     }
 

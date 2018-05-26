@@ -1,9 +1,63 @@
 {
+    "name": "JS",
+    "sections": [
+        "info",
+        "header",
+        "main"
+    ],
+    "code": [
+        {
+            "section": "info",
+            "code": "/* Generate by NodeFlow JS */"
+        }
+    ],
     "nodes": [
         {
-            "name": "test",
+            "name": "String",
+            "description": "Create variable as string",
+            "values": [
+                {
+                    "name": "string",
+                    "type": "string"
+                }
+            ],
             "input": [],
-            "output": []
+            "output": [
+                {
+                    "name": "out",
+                    "type": "string"
+                }
+            ],
+            "code": [
+                {
+                    "section": "header",
+                    "code": "let $un0$ = '$string$';",
+                    "output": [
+                        {
+                            "name": "out",
+                            "code": "$un0$"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Console Log",
+            "description": "Print data in console",
+            "values": [],
+            "input": [
+                {
+                    "name": "in",
+                    "type": "all"
+                }
+            ],
+            "output": [],
+            "code": [
+                {
+                    "section": "main",
+                    "code": "console.log($in$);"
+                }
+            ]
         }
     ]
 }
