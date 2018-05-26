@@ -334,10 +334,49 @@ $(document).ready(function(){
             onChangeNode(nodes[Number(selectedNode.attr("id"))]);
         }
     });
-
+    
     $(document).mouseup(function(e){
         selectedNode = null;
     });
+}
+
+//Resize Events
+{
+    let resize = false;
+    let node = null;
+
+    let startX;
+    let startY;
+
+    let startMX;
+    let startMY;
+
+    $(document).on("mousedown", ".node-resize", function(e) { 
+        resize = true;
+        node = nodes[Number($(this).parent().parent().attr("id"))];
+
+        startX = node.html.width();
+        startY = node.html.height();
+
+        startMX = e.pageX;
+        startMY = e.pageY;
+    });
+
+    $(document).mousemove(function(e) {
+        if(resize && node !== null){
+            node.html.width(startX + (e.pageX - startMX));
+            // node.html.height(startY + (e.pageY - startMY));
+            onChangeNode(node);
+        }
+    });
+
+    $(document).mouseup(function(e) {
+        if(resize){
+            resize = false;
+            node = null;
+        }
+    });
+
 }
 
 //Line Node Events
@@ -498,6 +537,7 @@ $(document).on("dblclick", ".node-title", function() {
         }
     });
 });
+
 
 //Move document
 /*{
