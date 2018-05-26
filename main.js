@@ -148,14 +148,11 @@ function addNode(type){
         type: type,
         input: [],
         output: [],
-        connected_to: [],
-        connected_from: [],
         nodes: [],
         html: c,
     });
 
     nodeMoveEvent();
-    nodeLineEvent();
 
     return nodes[nodes.length - 1];
 }
@@ -185,94 +182,6 @@ function nodeMoveEvent(){
     $(".node-title").mouseup(function(e){
         selectedNode = null;
     });
-}
-
-function nodeLineEvent(){
-    let node = null;
-    let nodeOut = null;
-    let selectedNodeStartMousePos = null;
-    let line = null;
-
-    let startX;
-    let startY;
-
-    let startMX;
-    let startMY;
-
-    $(".node-io-button").mousedown(function(e){
-        if($(this).parent().hasClass("node-output")){
-            node = nodes[Number($(this).parent().parent().parent().attr("id"))];
-            nodeOut = Number($(this).attr("id"));
-
-            startX = $(this).offset().left + $(this).width() / 2;
-            startY = $(this).offset().top + $(this).height() / 2;
-
-            startMX = e.pageX;
-            startMY = e.pageY;
-
-            line = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            line.setAttribute("stroke", "url(#gradient)");
-            line.setAttribute("stroke-width", "6px");
-            line.setAttribute("stroke-linecap", "round");
-            line.setAttribute("fill", "none");
-
-            $(".node-line-container").append(line);
-        }
-    });
-
-    $(document).mousemove(function(e){
-        if(node !== null){
-            let endX = (e.pageX - startMX) + node.html.offset().left + node.html.width();
-            let endY = (e.pageY - startMY) + node.html.offset().top + node.html.height();
-            drawLine(line, startX, startY, endX, endY);
-        }
-    });
-
-    $(document).mouseup(function(e){
-        if(node !== null){
-            if($(e.toElement).hasClass("node-io-button")){
-                let id = Number($(e.toElement).parent().parent().parent().attr("id"));
-                let id_in = Number($(e.toElement).attr("id"));
-
-                let found = false;
-                for (let i = 0; i < nodes[id].input.length; i++) {
-                    let n = nodes[id].input[i];
-                    if(n.node == node && n.output == nodeOut && n.input == id_in){
-                        found = true;
-                        break;
-                    }
-                }
-
-                if(!found){
-                    node.output.push({
-                        node: nodes[id],
-                        input: Number($(e.toElement).attr("id")),
-                        output: nodeOut,
-                        line: line
-                    });
-                    nodes[id].input.push({
-                        node: node,
-                        input: Number($(e.toElement).attr("id")),
-                        output: nodeOut,
-                        line: line
-                    });
-                    node.nodes.push(nodes[id]);
-
-                    let endX = $(e.toElement).offset().left + $(e.toElement).width() / 2;
-                    let endY = $(e.toElement).offset().top + $(e.toElement).height() / 2;
-                    drawLine(line, startX, startY, endX, endY);
-                }
-                else{
-                    $(line).remove();
-                }
-            }
-            else{
-                $(line).remove();
-            }
-            node = null;
-        }
-    });
-
 }
 
 function save(filename) {
@@ -368,8 +277,16 @@ function load(filename) {
 
         for (let i = 0; i < node.connects.length; i++) {
             let con = node.connects[i];
-            console.log(node.connects[i]);
     
+            // let found = false;
+            // for (let i = 0; i < node.input.length; i++) {
+            //     let n = node.input[i];
+            //     if(n.node == node && n.output == nodeIO && n.input == id_in){
+            //         found = true;
+            //         break;
+            //     }
+            // }
+
             let line = document.createElementNS("http://www.w3.org/2000/svg", "path");
             line.setAttribute("stroke", "url(#gradient)");
             line.setAttribute("stroke-width", "6px");
@@ -404,6 +321,7 @@ function load(filename) {
 $(document).ready(function(){
 
     load("test.json");
+    console.log(nodes);
     // addNode(nodes_type[0]);
     // addNode(nodes_type[0]);
     // addNode(nodes_type[0]);
@@ -413,4 +331,131 @@ $(document).ready(function(){
     // addNode(nodes_type[1]);
     // addNode(nodes_type[1]);
 
+
+
 });
+
+{
+    let node = null;
+    let nodeIO = null;
+    let nodeIO2 = null;
+    let line = null;
+
+    let startX;
+    let startY;
+
+    let startMX;
+    let startMY;
+
+    $(document).on("mousedown", ".node-io-button", function(e) { 
+        if($(this).parent().hasClass("node-output")){
+            node = nodes[Number($(this).parent().parent().parent().attr("id"))];
+            nodeIO = Number($(this).attr("id"));
+            nodeIO2 = $(this);
+
+            startX = $(this).offset().left + $(this).width() / 2;
+            startY = $(this).offset().top + $(this).height() / 2;
+
+            startMX = e.pageX;
+            startMY = e.pageY;
+
+            line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            line.setAttribute("stroke", "url(#gradient)");
+            line.setAttribute("stroke-width", "6px");
+            line.setAttribute("stroke-linecap", "round");
+            line.setAttribute("fill", "none");
+
+            $(".node-line-container").append(line);
+        }
+
+        if($(this).parent().hasClass("node-input")){
+            let _node = nodes[Number($(this).parent().parent().parent().attr("id"))];
+            let _nodeIO = Number($(this).attr("id"));
+            nodeIO2 = $(this);
+
+            for (let i = 0; i < _node.input.length; i++) {
+                let con = _node.input[i];
+                if(con.input == _nodeIO){
+
+                    node = con.node;
+                    line = con.line;
+
+                    startMX = e.pageX;
+                    startMY = e.pageY;
+
+                    let o = null;
+
+                    for (let j = 0; j < node.output.length; j++) {
+                        if(node.output[j].node == _node && node.output[j].input == _nodeIO){
+                            nodeIO = node.output[j].output;
+                            o = $(node.html).children(".node-output-context").children("li").children(".node-io-button").eq(nodeIO);
+                            node.output.splice(j, 1);
+                            break;
+                        }
+                    }
+                    _node.input.splice(i, 1);
+
+                    startX = o.offset().left + o.width() / 2;
+                    startY = o.offset().top + o.height() / 2;
+
+                    break;
+                }
+            }
+
+        }
+    });
+
+    $(document).mousemove(function(e){
+        if(node !== null && line !== null){
+            let endX = (e.pageX - startMX) + nodeIO2.offset().left + nodeIO2.width() / 2;
+            let endY = (e.pageY - startMY) + nodeIO2.offset().top + nodeIO2.height() / 2;
+            
+            drawLine(line, startX, startY, endX, endY);
+        }
+    });
+
+    $(document).mouseup(function(e){
+        if(node !== null){
+            if($(e.toElement).hasClass("node-io-button")){
+                let id = Number($(e.toElement).parent().parent().parent().attr("id"));
+                let id_in = Number($(e.toElement).attr("id"));
+
+                let found = false;
+                for (let i = 0; i < nodes[id].input.length; i++) {
+                    let n = nodes[id].input[i];
+                    if(n.node == node && n.output == nodeIO && n.input == id_in){
+                        found = true;
+                        break;
+                    }
+                }
+
+                if(!found){
+                    node.output.push({
+                        node: nodes[id],
+                        input: Number($(e.toElement).attr("id")),
+                        output: nodeIO,
+                        line: line
+                    });
+                    nodes[id].input.push({
+                        node: node,
+                        input: Number($(e.toElement).attr("id")),
+                        output: nodeIO,
+                        line: line
+                    });
+                    node.nodes.push(nodes[id]);
+
+                    let endX = $(e.toElement).offset().left + $(e.toElement).width() / 2;
+                    let endY = $(e.toElement).offset().top + $(e.toElement).height() / 2;
+                    drawLine(line, startX, startY, endX, endY);
+                }
+                else{
+                    $(line).remove();
+                }
+            }
+            else{
+                $(line).remove();
+            }
+            node = null;
+        }
+    });
+}
