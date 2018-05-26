@@ -26,6 +26,7 @@ body{
 }
 
 .node{
+    position: absolute;
     width: 100px;
     min-width: 20px;
     max-width: 100%;

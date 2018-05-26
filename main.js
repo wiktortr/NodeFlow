@@ -156,6 +156,8 @@ function addNode(type){
 
     nodeMoveEvent();
     nodeLineEvent();
+
+    return nodes[nodes.length - 1];
 }
 
 function nodeMoveEvent(){
@@ -174,8 +176,7 @@ function nodeMoveEvent(){
         if(selectedNode !== null){
             selectedNode.css({
                 left: selectedNodeStartPos.x + (e.pageX - selectedNodeStartMousePos.x),
-                top: selectedNodeStartPos.y + (e.pageY - selectedNodeStartMousePos.y),
-                position:'absolute'
+                top: selectedNodeStartPos.y + (e.pageY - selectedNodeStartMousePos.y)
             });
             onChangeNode(nodes[Number(selectedNode.attr("id"))]);
         }
@@ -282,32 +283,22 @@ function save(filename) {
             other: null,
             nodes: nodes_type,
         },
-        nodes: [],
-        tree: [],
+        nodes: []
     };
 
     for (let i = 0; i < data.lang.nodes.length; i++) {
         data.lang.nodes[i]["id"] = crypto.createHash("md5").update(JSON.stringify(data.lang.nodes[i])).digest("hex");
     }
-
-    let root = new Array();
-
-    for (let i = 0; i < nodes.length; i++) {
-        let n = nodes[i];
-        if(n.input.length == 0){
-            root.push(n);
-        }
-    }
-
+    
     let gb_index = 0;
-
-    let calc_node = function(node, parent){
+    for (let i = 0; i < nodes.length; i++) {
+        let node = nodes[i];
+        
         let out_node = {
             name: node.name,
             type: node.type.id,
             id: gb_index,
             uuid: crypto.createHash("md5").update(gb_index + node.name + JSON.stringify(node.type)).digest("hex"),
-            nodes: [],
             connects: [],
             style: {
                 position: {
@@ -323,29 +314,11 @@ function save(filename) {
         };
         gb_index += 1;
 
-        let ch_nodes = [];
-        for (let i = 0; i < node.output.length; i++) {
-            let found = false;
-            for (let j = 0; j < ch_nodes.length; j++) {
-                if(node.output[i].node == ch_nodes[j]){
-                    found = true;
-                    break;
-                }
-            }
-            if(!found){
-                ch_nodes.push(node.output[i].node);
-            }
-        }
-
-        for (let i = 0; i < ch_nodes.length; i++) {
-            out_node.nodes.push(calc_node(ch_nodes[i], out_node));
-        }
-
         for (let i = 0; i < node.output.length; i++) {
             let con = node.output[i];
             let found = -1;
-            for (let j = 0; j < ch_nodes.length; j++) {
-                if(ch_nodes[j] == con.node){
+            for (let j = 0; j < nodes.length; j++) {
+                if(nodes[j] == con.node){
                     found = j;
                     break;
                 }
@@ -357,11 +330,7 @@ function save(filename) {
             });
         }
 
-        return out_node;
-    };
-
-    for (let i = 0; i < root.length; i++) {
-        data.nodes.push(calc_node(root[i]));
+        data.nodes.push(out_node);
     }
 
     console.log(data);
@@ -369,20 +338,79 @@ function save(filename) {
 }
 
 function load(filename) {
+    let data = JSON.parse(fs.readFileSync(filename));
+    
+    //Create Nodes
+    for (let i = 0; i < data.nodes.length; i++) {
+        let node = data.nodes[i];
+        let found = null;
+        for (let i = 0; i < data.lang.nodes.length; i++) {
+            if(data.lang.nodes[i].id == node.type){
+                found = data.lang.nodes[i];
+                break;
+            }
+        }
 
+        let n = addNode(found);
+        n["uuid"] = node.uuid;
+        n.html.css({
+            left: node.style.position.x,
+            top: node.style.position.y,
+            width: node.style.size.x,
+            height: node.style.size.y,
+        });
+    }
+
+    //Create Line
+    for (let j = 0; j < data.nodes.length; j++) {
+        let node = data.nodes[j];
+        let n = nodes[j];
+
+        for (let i = 0; i < node.connects.length; i++) {
+            let con = node.connects[i];
+            console.log(node.connects[i]);
+    
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            line.setAttribute("stroke", "url(#gradient)");
+            line.setAttribute("stroke-width", "6px");
+            line.setAttribute("stroke-linecap", "round");
+            line.setAttribute("fill", "none");
+            $(".node-line-container").append(line);
+    
+            n.output.push({
+                node: nodes[con.node],
+                input: con.input,
+                output: con.output,
+                line: line
+            });
+    
+            nodes[con.node].input.push({
+                node: n,
+                input: con.input,
+                output: con.output,
+                line: line
+            });
+            n.nodes.push(nodes[con.node]);
+        }
+        onChangeNode(n);
+        
+    }
+
+    
+
+    console.log(data);
 }
 
 $(document).ready(function(){
-    console.log("OK");
 
-    addNode(nodes_type[0]);
-    addNode(nodes_type[0]);
-    addNode(nodes_type[0]);
-    addNode(nodes_type[0]);
-    addNode(nodes_type[0]);
-    addNode(nodes_type[1]);
-    addNode(nodes_type[1]);
-    addNode(nodes_type[1]);
-
+    load("test.json");
+    // addNode(nodes_type[0]);
+    // addNode(nodes_type[0]);
+    // addNode(nodes_type[0]);
+    // addNode(nodes_type[0]);
+    // addNode(nodes_type[0]);
+    // addNode(nodes_type[1]);
+    // addNode(nodes_type[1]);
+    // addNode(nodes_type[1]);
 
 });
