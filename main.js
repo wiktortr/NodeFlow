@@ -231,31 +231,43 @@ function nodeLineEvent(){
         if(node !== null){
             if($(e.toElement).hasClass("node-io-button")){
                 let id = Number($(e.toElement).parent().parent().parent().attr("id"));
+                let id_in = Number($(e.toElement).attr("id"));
 
-                node.output.push({
-                    node: nodes[id],
-                    input: Number($(e.toElement).attr("id")),
-                    output: nodeOut,
-                    line: line
-                });
-                
-                nodes[id].input.push({
-                    node: node,
-                    input: Number($(e.toElement).attr("id")),
-                    output: nodeOut,
-                    line: line
-                });
+                let found = false;
+                for (let i = 0; i < nodes[id].input.length; i++) {
+                    let n = nodes[id].input[i];
+                    if(n.node == node && n.output == nodeOut && n.input == id_in){
+                        found = true;
+                        break;
+                    }
+                }
 
-                node.nodes.push(nodes[id]);
+                if(!found){
+                    node.output.push({
+                        node: nodes[id],
+                        input: Number($(e.toElement).attr("id")),
+                        output: nodeOut,
+                        line: line
+                    });
+                    nodes[id].input.push({
+                        node: node,
+                        input: Number($(e.toElement).attr("id")),
+                        output: nodeOut,
+                        line: line
+                    });
+                    node.nodes.push(nodes[id]);
 
-                let endX = $(e.toElement).offset().left + $(e.toElement).width() / 2;
-                let endY = $(e.toElement).offset().top + $(e.toElement).height() / 2;
-                drawLine(line, startX, startY, endX, endY);
+                    let endX = $(e.toElement).offset().left + $(e.toElement).width() / 2;
+                    let endY = $(e.toElement).offset().top + $(e.toElement).height() / 2;
+                    drawLine(line, startX, startY, endX, endY);
+                }
+                else{
+                    $(line).remove();
+                }
             }
             else{
-                $(".node-line-container").remove(line);
+                $(line).remove();
             }
-
             node = null;
         }
     });
@@ -274,41 +286,90 @@ function save(filename) {
         tree: [],
     };
 
+    for (let i = 0; i < data.lang.nodes.length; i++) {
+        data.lang.nodes[i]["id"] = crypto.createHash("md5").update(JSON.stringify(data.lang.nodes[i])).digest("hex");
+    }
+
     let root = new Array();
 
     for (let i = 0; i < nodes.length; i++) {
         let n = nodes[i];
         if(n.input.length == 0){
-            console.log("Root: ");
-            console.log(n);
             root.push(n);
         }
     }
-    console.log(root);
 
-    // for (let i = 0; i < nodes.length; i++) {
-    //     let n = nodes[i];
-    //     let node = {
-    //         name: n.name,
-    //         id: crypto.createHash("md5").update(i + JSON.stringify(n.type)).digest("hex"),
-    //         input: [],
-    //         output: [],
-    //         style: {
-    //             position: {
-    //                 x: n.html.offset().left,
-    //                 y: n.html.offset().top,
-    //             },
-    //             size: {
-    //                 x: n.html.width(),
-    //                 y: n.html.height(),
-    //             },
-    //             css: null
-    //         }
-    //     };
+    let gb_index = 0;
 
-    // }
+    let calc_node = function(node, parent){
+        let out_node = {
+            name: node.name,
+            type: node.type.id,
+            id: gb_index,
+            uuid: crypto.createHash("md5").update(gb_index + node.name + JSON.stringify(node.type)).digest("hex"),
+            nodes: [],
+            connects: [],
+            style: {
+                position: {
+                    x: node.html.offset().left,
+                    y: node.html.offset().top,
+                },
+                size: {
+                    x: node.html.width(),
+                    y: node.html.height(),
+                },
+                css: null
+            }
+        };
+        gb_index += 1;
 
+        let ch_nodes = [];
+        for (let i = 0; i < node.output.length; i++) {
+            let found = false;
+            for (let j = 0; j < ch_nodes.length; j++) {
+                if(node.output[i].node == ch_nodes[j]){
+                    found = true;
+                    break;
+                }
+            }
+            if(!found){
+                ch_nodes.push(node.output[i].node);
+            }
+        }
+
+        for (let i = 0; i < ch_nodes.length; i++) {
+            out_node.nodes.push(calc_node(ch_nodes[i], out_node));
+        }
+
+        for (let i = 0; i < node.output.length; i++) {
+            let con = node.output[i];
+            let found = -1;
+            for (let j = 0; j < ch_nodes.length; j++) {
+                if(ch_nodes[j] == con.node){
+                    found = j;
+                    break;
+                }
+            }
+            out_node.connects.push({
+                output: con.output,
+                input: con.input,
+                node: found
+            });
+        }
+
+        return out_node;
+    };
+
+    for (let i = 0; i < root.length; i++) {
+        data.nodes.push(calc_node(root[i]));
+    }
+
+    console.log(data);
     fs.writeFileSync(filename, JSON.stringify(data));
+}
+
+function load(filename) {
+
 }
 
 $(document).ready(function(){
