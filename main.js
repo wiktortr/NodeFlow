@@ -47,10 +47,6 @@ let nodes_type = [
 let nodes = [];
 
 
-function onChangeContext(){
-
-}
-
 function drawLine(line, x1, y1, x2, y2) {
 
     if(y1 > y2){
@@ -152,36 +148,7 @@ function addNode(type){
         html: c,
     });
 
-    nodeMoveEvent();
-
     return nodes[nodes.length - 1];
-}
-
-function nodeMoveEvent(){
-    let selectedNode = null;
-    let selectedNodeStartPos = null;
-    let selectedNodeStartMousePos = null;
-
-    $(".node-title").mousedown(function(e){
-        selectedNode = $(this).parent();
-        let o = selectedNode.offset();
-        selectedNodeStartPos = { x: o.left, y: o.top };
-        selectedNodeStartMousePos = { x: e.pageX, y: e.pageY };
-    });
-
-    $(document).mousemove(function(e){
-        if(selectedNode !== null){
-            selectedNode.css({
-                left: selectedNodeStartPos.x + (e.pageX - selectedNodeStartMousePos.x),
-                top: selectedNodeStartPos.y + (e.pageY - selectedNodeStartMousePos.y)
-            });
-            onChangeNode(nodes[Number(selectedNode.attr("id"))]);
-        }
-    });
-
-    $(".node-title").mouseup(function(e){
-        selectedNode = null;
-    });
 }
 
 function save(filename) {
@@ -335,6 +302,35 @@ $(document).ready(function(){
 
 });
 
+//Move Node Events
+{
+    let selectedNode = null;
+    let selectedNodeStartPos = null;
+    let selectedNodeStartMousePos = null;
+
+    $(document).on("mousedown", ".node-title", function(e) { 
+        selectedNode = $(this).parent();
+        let o = selectedNode.offset();
+        selectedNodeStartPos = { x: o.left, y: o.top };
+        selectedNodeStartMousePos = { x: e.pageX, y: e.pageY };
+    });
+
+    $(document).mousemove(function(e){
+        if(selectedNode !== null){
+            selectedNode.css({
+                left: selectedNodeStartPos.x + (e.pageX - selectedNodeStartMousePos.x),
+                top: selectedNodeStartPos.y + (e.pageY - selectedNodeStartMousePos.y)
+            });
+            onChangeNode(nodes[Number(selectedNode.attr("id"))]);
+        }
+    });
+
+    $(document).mouseup(function(e){
+        selectedNode = null;
+    });
+}
+
+//Line Node Events
 {
     let node = null;
     let nodeIO = null;
@@ -458,4 +454,42 @@ $(document).ready(function(){
             node = null;
         }
     });
+}
+
+//Rename Events
+$(document).on("dblclick", ".node-title", function() {
+    let t = $(this);
+    let inp = $("<input>").attr("type", "text").addClass("node-title-rename").val(t.html());
+    t.html(inp);
+    inp.select();
+
+    let node = null;
+    for (let i = 0; i < nodes.length; i++) {
+        if(nodes[i].html == t.parent()){
+            node = nodes[i];
+            break;
+        }
+    }
+
+    $(document).keypress(function(e){
+        if(e.key == "Enter"){
+            t.html(inp.val());
+            if(node !== null){
+                node.name = t.html();
+            }
+        }
+    });
+    $(document).mousedown(function(e){
+        if($(e.toElement) !== inp){
+            t.html(inp.val());
+            if(node !== null){
+                node.name = t.html();
+            }
+        }
+    });
+});
+
+//Move document
+{
+
 }
