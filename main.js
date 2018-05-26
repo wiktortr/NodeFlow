@@ -2,6 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
+let language = JSON.parse(fs.readFileSync("lang.json"));
+
 let nodes_type = [
     {
         name: "test",
