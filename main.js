@@ -141,7 +141,7 @@ function addNode(type){
 
     nodes.push({
         name: type.name,
-        type: type,
+        type: type.id,
         input: [],
         output: [],
         nodes: [],
@@ -163,16 +163,18 @@ function save(filename) {
     };
 
     for (let i = 0; i < data.lang.nodes.length; i++) {
-        data.lang.nodes[i]["id"] = crypto.createHash("md5").update(JSON.stringify(data.lang.nodes[i])).digest("hex");
+        if(data.lang.nodes[i]["id"] === undefined){
+            data.lang.nodes[i]["id"] = crypto.createHash("md5").update(JSON.stringify(data.lang.nodes[i])).digest("hex");
+        }
     }
     
     let gb_index = 0;
     for (let i = 0; i < nodes.length; i++) {
         let node = nodes[i];
-        
+
         let out_node = {
             name: node.name,
-            type: node.type.id,
+            type: node.type,
             id: gb_index,
             uuid: crypto.createHash("md5").update(gb_index + node.name + JSON.stringify(node.type)).digest("hex"),
             connects: [],
@@ -216,6 +218,8 @@ function save(filename) {
 function load(filename) {
     let data = JSON.parse(fs.readFileSync(filename));
     
+    nodes_type = data.lang.nodes;
+
     //Create Nodes
     for (let i = 0; i < data.nodes.length; i++) {
         let node = data.nodes[i];
