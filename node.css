@@ -4,6 +4,11 @@ body{
     --node-background1: #aaaaaa;
     --node-background2: #e9e9e9;
     --node-font-color: #fff;
+
+    --node-input-background0: #e4e4e4;
+    --node-input-background1: #4b4b4b;
+    --node-input-font-color: #373737;
+
 }
 
 .node-context{
@@ -35,6 +40,7 @@ body{
     background-color: var(--node-background0);
     color: var(--node-font-color);
     border-radius: 2px;
+    box-shadow: 0px 0px 2px 1px var(--node-background0);
 
     user-select: none;
     cursor: default;
@@ -86,17 +92,23 @@ body{
     color: #fff;
 }
 
-.node-value-container{
-
-}
-
 .node-value-in{
     width: 100%;
     border-radius: 5px;
-    background-color: var(--node-background2);
-    color: #000;
+    background-color: var(--node-input-background0);
+    color: var(--node-input-font-color);
+    box-shadow: 0px 0px 1px 1px var(--node-input-background1);
+    transition: all 0.2s ease-in-out;
 }
 
+.node-value-in:focus{
+    box-shadow: 0px 0px 1px 1px var(--node-input-background1);
+}
+
+
+.node-value-in[type="checkbox"]{
+    box-shadow: none;
+}
 
 .node-io-button{
     width: 15px;
