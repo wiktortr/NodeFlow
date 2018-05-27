@@ -130,22 +130,33 @@ function addNode(type){
     let values = $("<ul>").addClass("node-value-context");
     for (let i = 0; i < type.values.length; i++) {
         let v = type.values[i];
-        let li = $("<li>").attr("id", i).attr("name", v.name);
+        let li = $("<li>").attr("id", i).attr("name", v.name).addClass("node-value");
         li.append($("<div>").addClass("node-value-title").html(v.name));
-        let c = $("<div>").addClass("node-value-container");
-        li.append(c);
 
         let inValue = null;
 
         if(v.type == "string"){
             inValue = $("<input>").attr("type", "text").addClass("node-value-in");
-            inValue.keypress(function(e) {
-                node.values[i].value = $(this).val();
-            });
         }
 
+        if(v.type == "number"){
+            inValue = $("<input>").attr("type", "number").addClass("node-value-in");
+        }
+
+        if(v.type == "checkbox"){
+            inValue = $("<input>").attr("type", "checkbox").addClass("node-value-in");
+        }
+
+        if(v.type == "combobox"){
+            inValue = $("<select>").addClass("node-value-in");
+            for (let j = 0; j < v.values.length; j++) {
+                inValue.append($("<option>").attr("value", v.values[j]).html(v.values[j]));
+            }
+        }
+        
+
         if(inValue !== null){
-            c.append(inValue);
+            li.append(inValue);
             values.append(li);
 
             node.values.push({
@@ -154,14 +165,22 @@ function addNode(type){
                 value: null,
                 html: inValue
             });
+
+            inValue.keypress(function(e) {
+                node.values[i].value = $(this).val();
+            });
+
+            inValue.change(function(e) {
+                node.values[i].value = $(this).val();
+            });
+
         }
     }
     node.html.append(values);
 
     let output = $("<ul>").addClass("node-output-context");
     for (let i = 0; i < type.output.length; i++) {
-        let btn = $("<div>").addClass("node-io-button");
-        btn.attr("id", i);
+        let btn = $("<div>").addClass("node-io-button").attr("id", i);
         let li = $("<li>").addClass("node-output");
         li.append(btn);
         output.append(li);
@@ -169,9 +188,32 @@ function addNode(type){
     node.html.append(output);
 
     node.html.append(`<div style="clear: both"></div><div class="node-footer"><span class="node-resize"></span></div>`);
-
-    
     $(".node-container").append(node.html);
+
+    for (let i = 0; i < node.values.length; i++){
+        let v = node.values[i];
+        
+        for (let j = 0; j < type.output.length; j++) {
+            let o = type.output[j];
+            if(o.value == v.name){
+                let html = output.children().eq(j);
+                let mar = v.html.parent().offset().top - html.offset().top + 15 + v.html.parent().height() / 2;
+                html.css("margin-top", mar + "px");
+                break;
+            }
+        }
+
+        for (let j = 0; j < type.input.length; j++) {
+            let o = type.input[j];
+            if(o.value == v.name){
+                let html = input.children().eq(j);
+                let mar = v.html.parent().offset().top - html.offset().top + 15 + v.html.parent().height() / 2;
+                html.css("margin-top", mar + "px");
+                break;
+            }
+        }
+        
+    }
 
     if(type.id === undefined){
         type["id"] = crypto.createHash("md5").update(JSON.stringify(type)).digest("hex");
@@ -275,7 +317,7 @@ function load(filename) {
             left: node.style.position.x,
             top: node.style.position.y,
             width: node.style.size.x,
-            height: node.style.size.y,
+            // height: node.style.size.y,
         });
 
         for (let i = 0; i < node.values.length; i++) {
@@ -330,6 +372,10 @@ function load(filename) {
     
 
     console.log(data);
+}
+
+function translate() {
+
 }
 
 $(document).ready(function(){

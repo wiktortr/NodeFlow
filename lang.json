@@ -13,6 +13,55 @@
     ],
     "nodes": [
         {
+            "name": "Test",
+            "description": "Testing values",
+            "values": [
+                {
+                    "name": "test combobox",
+                    "type": "combobox",
+                    "values": [
+                        "default",
+                        "add",
+                        "sub",
+                        "div",
+                        "mul"
+                    ]
+                },
+                {
+                    "name": "test ch",
+                    "type": "checkbox"
+                },
+                {
+                    "name": "test number",
+                    "type": "number"
+                },
+                {
+                    "name": "string",
+                    "type": "string"
+                }
+            ],
+            "input": [
+                {
+                    "name": "in",
+                    "type": "number",
+                    "value": "test combobox"
+                }
+            ],
+            "output": [
+                {
+                    "name": "out",
+                    "type": "number",
+                    "value": "test number"
+                },
+                {
+                    "name": "out1",
+                    "type": "number",
+                    "value": "string"
+                }
+            ],
+            "code": []
+        },
+        {
             "name": "String",
             "description": "Create variable as string",
             "values": [
